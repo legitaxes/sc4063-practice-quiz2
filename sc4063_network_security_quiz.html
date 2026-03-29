@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SC4063 Network Security — Revision Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0e17;--surface:#111827;--surface2:#1a2332;--surface3:#222d3d;
+--border:#2a3545;--border-active:#3b82f6;
+--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
+--accent:#3b82f6;--accent-glow:rgba(59,130,246,0.15);
+--green:#10b981;--green-bg:rgba(16,185,129,0.1);--green-border:rgba(16,185,129,0.3);
+--red:#ef4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.1);
+--purple:#a78bfa;
+--radius:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;line-height:1.6}
+.app{max-width:860px;margin:0 auto;padding:20px 16px 80px}
+
+/* Header */
+.header{text-align:center;padding:48px 0 40px;position:relative}
+.header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%);pointer-events:none}
+.badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(59,130,246,0.2);padding:6px 16px;border-radius:20px;margin-bottom:16px}
+.header h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#e2e8f0 0%,#94a3b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.header p{color:var(--text-dim);font-size:15px;max-width:520px;margin:0 auto}
+
+/* Progress */
+.progress-wrap{position:sticky;top:0;z-index:100;background:rgba(10,14,23,0.92);backdrop-filter:blur(12px);padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:28px}
+.progress-inner{display:flex;align-items:center;gap:14px;max-width:860px;margin:0 auto;padding:0 16px}
+.progress-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px;transition:width .4s ease}
+.progress-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);white-space:nowrap;min-width:80px;text-align:right}
+
+/* Stats bar */
+.stats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.stat-chip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border)}
+.stat-chip.correct{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.stat-chip.wrong{color:var(--red);border-color:var(--red-border);background:var(--red-bg)}
+
+/* Topic filter */
+.topic-filter{margin-bottom:28px}
+.topic-filter label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px;font-weight:600}
+.topic-pills{display:flex;flex-wrap:wrap;gap:6px}
+.topic-pill{font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;transition:all .2s}
+.topic-pill:hover{border-color:var(--accent);color:var(--text)}
+.topic-pill.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);font-weight:500}
+
+/* Question card */
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;margin-bottom:16px;transition:border-color .3s;position:relative}
+.q-card.answered-correct{border-color:var(--green-border)}
+.q-card.answered-wrong{border-color:var(--red-border)}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.q-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:var(--accent-glow);padding:3px 10px;border-radius:4px;font-weight:600}
+.q-type{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--purple);background:rgba(167,139,250,0.1);padding:3px 10px;border-radius:4px}
+.q-topic{font-size:11px;color:var(--text-muted);margin-left:auto;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.q-text{font-size:16px;font-weight:500;line-height:1.65;margin-bottom:20px;color:var(--text)}
+
+/* Options */
+.options{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;position:relative}
+.opt:hover:not(.locked){border-color:var(--accent);background:rgba(59,130,246,0.04)}
+.opt.selected{border-color:var(--accent);background:var(--accent-glow)}
+.opt.locked{cursor:default}
+.opt.correct-answer{border-color:var(--green-border);background:var(--green-bg)}
+.opt.wrong-answer{border-color:var(--red-border);background:var(--red-bg)}
+.opt-marker{width:22px;height:22px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;margin-top:1px}
+.opt.selected .opt-marker{border-color:var(--accent);background:var(--accent);color:#fff}
+.opt.correct-answer .opt-marker{border-color:var(--green);background:var(--green);color:#fff}
+.opt.wrong-answer .opt-marker{border-color:var(--red);background:var(--red);color:#fff}
+.single .opt-marker{border-radius:50%}
+.opt-text{font-size:14px;line-height:1.5;color:var(--text-dim)}
+.opt.selected .opt-text,.opt.correct-answer .opt-text,.opt.wrong-answer .opt-text{color:var(--text)}
+
+/* Submit btn */
+.submit-row{margin-top:16px;display:flex;gap:10px;align-items:center}
+.btn{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:10px 24px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--text-dim);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--text)}
+
+/* Explanation */
+.explanation{margin-top:16px;padding:16px;border-radius:8px;font-size:14px;line-height:1.7;color:var(--text-dim);display:none}
+.explanation.show{display:block}
+.explanation.correct-exp{background:var(--green-bg);border:1px solid var(--green-border)}
+.explanation.wrong-exp{background:var(--red-bg);border:1px solid var(--red-border)}
+.explanation strong{color:var(--text);font-weight:600}
+
+/* Results */
+.results-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px 32px;text-align:center;margin:40px 0}
+.results-card h2{font-size:28px;font-weight:700;margin-bottom:8px}
+.results-score{font-size:64px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:16px 0}
+.results-breakdown{display:flex;justify-content:center;gap:32px;margin:24px 0}
+.results-breakdown div{text-align:center}
+.results-breakdown .val{font-size:24px;font-weight:700}
+.results-breakdown .lbl{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+
+/* Scroll to top */
+.scroll-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);display:none;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:50;transition:all .2s}
+.scroll-top:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.scroll-top.visible{display:flex}
+
+/* nav */
+.nav-link{display:inline-block;margin-top:16px;font-size:13px;color:var(--purple);text-decoration:none;border:1px solid rgba(167,139,250,0.3);padding:8px 20px;border-radius:8px;transition:all .2s}
+.nav-link:hover{background:rgba(167,139,250,0.1);border-color:var(--purple)}
+.btn-row-end{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+
+/* hidden */
+.hidden{display:none!important}
+
+@media(max-width:600px){
+.q-card{padding:20px 16px}
+.q-text{font-size:15px}
+.results-score{font-size:48px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<div class="header" id="header">
+<div class="badge">SC4063 — Network Security</div>
+<h1>Revision Quiz</h1>
+<p>Comprehensive quiz across all lecture topics. Mostly multi-select with some single-answer MCQs.</p>
+<a class="nav-link" href="sc4063_quiz2_week8_advanced.html">→ Quiz 2: Week 8+ Advanced Topics</a>
+<div style="margin-top:24px">
+<div class="topic-filter">
+<label>Filter by topic</label>
+<div class="topic-pills" id="topicPills"></div>
+</div>
+<button class="btn btn-primary" id="startBtn" onclick="startQuiz()">Start Quiz</button>
+</div>
+</div>
+
+<div class="hidden" id="quizArea">
+<div class="progress-wrap">
+<div class="progress-inner">
+<div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+<div class="progress-label" id="progressLabel">0 / 0</div>
+</div>
+</div>
+<div class="stats-bar" id="statsBar">
+<div class="stat-chip correct" id="statCorrect">✓ 0</div>
+<div class="stat-chip wrong" id="statWrong">✗ 0</div>
+<div class="stat-chip" id="statPending">○ 0 remaining</div>
+</div>
+<div id="questionsContainer"></div>
+<div class="results-card hidden" id="resultsCard">
+<h2>Quiz Complete</h2>
+<div class="results-score" id="finalScore"></div>
+<div class="results-breakdown">
+<div><div class="val" style="color:var(--green)" id="finalCorrect">0</div><div class="lbl">Correct</div></div>
+<div><div class="val" style="color:var(--red)" id="finalWrong">0</div><div class="lbl">Wrong</div></div>
+<div><div class="val" style="color:var(--purple)" id="finalTotal">0</div><div class="lbl">Total</div></div>
+</div>
+<button class="btn btn-primary" onclick="resetQuiz()" style="margin-top:16px">Try Again</button>
+<button class="btn btn-outline" onclick="reviewWrong()" style="margin-top:16px" id="reviewBtn">Review Wrong Answers</button>
+<div style="margin-top:16px"><a class="nav-link" href="sc4063_quiz2_week8_advanced.html">→ Quiz 2: Week 8+ Advanced Topics</a></div>
+</div>
+</div>
+</div>
+
+<div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<script>
+const ALL_QUESTIONS = [
+// ======== TOPIC: Castle & Moat / Perimeter Death ========
+{
+topic:"Perimeter & Zero Trust",
+type:"multi",
+q:"Which of the following factors contributed to the 'death of the perimeter' in network security? (Select all that apply)",
+opts:["Adoption of cloud services (SaaS/IaaS) placing data outside corporate networks","Widespread remote work making the network edge a user's laptop on public Wi-Fi","Encryption (TLS) blinding traditional perimeter inspection tools","Increased use of stateful firewalls at the network edge"],
+correct:[0,1,2],
+explain:"The perimeter dissolved due to cloud adoption moving data to third-party infrastructure, remote/mobile work distributing the network edge, and TLS encryption blinding legacy inspection tools. Stateful firewalls are a perimeter defense tool, not a cause of the perimeter's dissolution."
+},
+{
+topic:"Perimeter & Zero Trust",
+type:"single",
+q:"In the Capital One breach of 2019, what was the root cause that allowed the attacker to steal credentials from the cloud instance?",
+opts:["A phishing email targeting an employee","A WAF misconfiguration allowing queries to the AWS Metadata Service (IMDSv1)","An unpatched vulnerability in the EC2 operating system","A brute-force attack on the AWS root account password"],
+correct:[1],
+explain:"The attacker exploited a Server-Side Request Forgery (SSRF) vulnerability through a misconfigured WAF to query the internal AWS Metadata Service (IMDSv1), which returned temporary IAM credentials without requiring authentication."
+},
+{
+topic:"Perimeter & Zero Trust",
+type:"multi",
+q:"According to the Zero Trust model (NIST 800-207), which of the following are pillars of verification for every access request? (Select all that apply)",
+opts:["Identity: Is this user/service who they claim to be?","Context: Is the device healthy and the location valid?","Privilege: Does the user actually need this specific resource?","Perimeter: Is the request originating from inside the corporate LAN?"],
+correct:[0,1,2],
+explain:"Zero Trust verification is based on three pillars: Identity, Context (device health, location, behavior), and Privilege (least-privilege access). Network location (perimeter) is explicitly NOT a factor in Zero Trust, which assumes the network is always hostile."
+},
+{
+topic:"Perimeter & Zero Trust",
+type:"single",
+q:"What is the key architectural difference between a traditional VPN and Zero Trust Network Access (ZTNA)?",
+opts:["ZTNA uses stronger encryption algorithms than VPN","VPN connects a user to the network; ZTNA connects a user to a specific application","ZTNA requires on-premise hardware while VPN is cloud-based","VPN uses identity verification while ZTNA uses IP-based access"],
+correct:[1],
+explain:"The fundamental difference is the access model. VPN is network-centric (connecting the user to the entire network, enabling lateral movement), while ZTNA is application-centric (connecting the user only to the specific authorized application with no broad network visibility)."
+},
+{
+topic:"Perimeter & Zero Trust",
+type:"multi",
+q:"The Colonial Pipeline ransomware attack (2021) succeeded because of which failures? (Select all that apply)",
+opts:["A legacy VPN profile was used for initial access","The VPN account lacked Multi-Factor Authentication (MFA)","The VPN account belonged to a former employee (Leaver failure)","The attackers exploited a zero-day vulnerability in the firewall"],
+correct:[0,1,2],
+explain:"Colonial Pipeline was breached through a legacy VPN profile without MFA that belonged to a former employee whose account was never deprovisioned. This illustrates failures in both implicit trust (VPN model) and identity governance (the Leaver process)."
+},
+// ======== TOPIC: Layer 3/4, 5-Tuple, Firewalls ========
+{
+topic:"Firewalls & Network Controls",
+type:"multi",
+q:"Why is relying solely on the 5-tuple (Src IP, Dst IP, Src Port, Dst Port, Protocol) insufficient for modern network security? (Select all that apply)",
+opts:["L3/L4 controls see connections but not intent or payload content","Attackers tunnel malicious traffic through allowed ports like DNS (UDP 53) and HTTPS (TCP 443)","A banking transaction and a C2 beacon look identical to a Layer 4 firewall if both use TCP 443","The 5-tuple can detect application-layer exploits like SQL injection"],
+correct:[0,1,2],
+explain:"Layer 3/4 controls are context-blind. They cannot inspect payload content, meaning any traffic on an allowed port passes through regardless of whether it is legitimate or malicious. The 5-tuple cannot detect application-layer attacks."
+},
+{
+topic:"Firewalls & Network Controls",
+type:"single",
+q:"The OilRig APT group used which technique to exfiltrate data past firewalls?",
+opts:["SSH tunneling over port 22","DNS tunneling by encoding stolen data into subdomains of DNS queries","Exploiting a zero-day in the firewall firmware","Man-in-the-middle attack on HTTPS connections"],
+correct:[1],
+explain:"OilRig used DNS tunneling, encoding stolen data into the subdomains of DNS queries (e.g., [stolen_data].attacker.com). Firewalls allowed this because DNS (UDP 53) is considered essential infrastructure traffic."
+},
+{
+topic:"Firewalls & Network Controls",
+type:"multi",
+q:"Which of the following are valid firewall deployment models discussed in the lectures? (Select all that apply)",
+opts:["Perimeter firewalls at the network edge","Internal segmentation firewalls between departments","Host-based firewalls on individual endpoints","Virtual/cloud firewalls using Security Groups and NSGs"],
+correct:[0,1,2,3],
+explain:"All four are valid deployment models. Modern defense-in-depth uses perimeter firewalls (North-South), internal segmentation firewalls (lateral movement prevention), host-based firewalls (endpoint isolation), and cloud-native virtual firewalls (micro-segmentation)."
+},
+{
+topic:"Firewalls & Network Controls",
+type:"single",
+q:"In cloud environments, what is the key difference between Security Groups and Network ACLs (NACLs)?",
+opts:["Security Groups are stateless; NACLs are stateful","Security Groups are stateful (auto-allow return traffic); NACLs are stateless (return traffic must be explicitly allowed)","Both are stateful but NACLs operate at the instance level","Security Groups support deny rules while NACLs only support allow rules"],
+correct:[1],
+explain:"Security Groups are stateful firewalls applied to instances (they auto-allow return traffic and generally only support allow rules). NACLs are stateless, operate at the subnet level, and support both allow and deny rules, requiring explicit rules for return traffic."
+},
+{
+topic:"Firewalls & Network Controls",
+type:"multi",
+q:"What lessons did the Log4Shell (2021) exploit teach about firewall limitations? (Select all that apply)",
+opts:["L3/L4 firewalls could not see the exploit inside encrypted TLS tunnels","Attackers used obfuscation (e.g., ${lower:j}ndi) to evade even WAF signatures","Egress filtering could have broken the exploit chain by blocking outbound LDAP connections","Firewalls alone were sufficient to stop the attack if properly configured"],
+correct:[0,1,2],
+explain:"Log4Shell demonstrated that L3/L4 firewalls are blind to application-layer exploits in encrypted tunnels, attackers used obfuscation to bypass WAF signatures, and strict egress filtering (blocking the outbound LDAP connection) would have disrupted the exploit chain. Firewalls alone were not sufficient."
+},
+// ======== TOPIC: Identity & IAM ========
+{
+topic:"Identity & IAM",
+type:"multi",
+q:"In Identity Governance and Administration (IGA), the 'Joiner-Mover-Leaver' lifecycle presents specific risks. Which statements are correct? (Select all that apply)",
+opts:["Joiners risk receiving excessive default permissions upon onboarding","Movers risk privilege accumulation (privilege creep) when changing roles without losing old access","Leavers present the highest risk due to dormant or forgotten credentials","Movers have the lowest risk since role changes are tracked automatically"],
+correct:[0,1,2],
+explain:"All three lifecycle stages carry specific risks: Joiners may receive overly broad default access, Movers accumulate privileges across roles (privilege creep), and Leavers represent the highest risk because their credentials may remain active indefinitely if not properly deprovisioned."
+},
+{
+topic:"Identity & IAM",
+type:"single",
+q:"What is the core concept behind Just-in-Time (JIT) access, as implemented in tools like Azure PIM?",
+opts:["Granting permanent admin access but monitoring it continuously","Making admins 'eligible' for roles they must explicitly activate for a limited time window","Providing admin access only during business hours","Requiring managers to perform all administrative tasks on behalf of engineers"],
+correct:[1],
+explain:"JIT access implements Zero Standing Privileges. Admins are 'eligible' for a role but do not hold it permanently. They must activate it through a workflow (e.g., MFA challenge, approval) and access is granted only for a specific time window before being automatically revoked."
+},
+{
+topic:"Identity & IAM",
+type:"multi",
+q:"In the context of modern security, why is the statement 'Attackers don't break in, they log in' significant? (Select all that apply)",
+opts:["Credential theft via phishing and password spraying is low-cost and highly effective","An attacker with valid credentials bypasses perimeter defenses entirely","Traditional firewalls cannot distinguish a legitimate user from an attacker using stolen credentials","This means firewalls and encryption are no longer needed"],
+correct:[0,1,2],
+explain:"Credential-based attacks are cheap and effective. Once attackers have valid credentials, they appear as legitimate users to firewalls and access controls, creating a massive visibility gap. This does NOT mean firewalls/encryption are unnecessary; rather, they must be supplemented with behavioral monitoring."
+},
+{
+topic:"Identity & IAM",
+type:"single",
+q:"The LAPSUS$ group's attack on Okta in 2022 is an example of which MITRE ATT&CK technique?",
+opts:["T1190 — Exploit Public-Facing Application","T1199 — Trusted Relationships","T1027 — Obfuscated Files or Information","T1485 — Data Destruction"],
+correct:[1],
+explain:"LAPSUS$ exploited Trusted Relationships (T1199). They compromised an Okta support engineer and used that trusted vendor access to pivot 'East-West' into customer tenants, riding the API integrations that businesses depend on."
+},
+// ======== TOPIC: Networking Fundamentals ========
+{
+topic:"Networking Fundamentals",
+type:"multi",
+q:"Which statements about ICMP are correct from a security perspective? (Select all that apply)",
+opts:["Completely blocking ICMP can break Path MTU Discovery and cause connectivity issues","Attackers use ICMP for reconnaissance through ping sweeps and network mapping","ICMP should be selectively allowed, rate-limited, and monitored rather than fully blocked","ICMP is only used for ping and has no other diagnostic functions"],
+correct:[0,1,2],
+explain:"ICMP is a double-edged sword: essential for diagnostics (ping, traceroute, error reporting) but exploitable for reconnaissance and DoS. Best practice is to selectively allow needed types, rate-limit, and monitor for anomalies rather than fully blocking it."
+},
+{
+topic:"Networking Fundamentals",
+type:"single",
+q:"How does traceroute use the TTL field to discover the network path?",
+opts:["It sends packets with incrementally increasing TTL values, collecting ICMP Time Exceeded messages from each hop","It sends packets with the maximum TTL and reads the response headers","It queries each router's ARP table sequentially","It uses BGP route advertisements to trace the path"],
+correct:[0],
+explain:"Traceroute sends packets starting with TTL=1. The first router decrements it to 0, drops the packet, and sends an ICMP Time Exceeded message revealing its identity. Traceroute then increments TTL to 2, 3, etc., mapping each hop along the path."
+},
+{
+topic:"Networking Fundamentals",
+type:"multi",
+q:"Why is IP fragmentation a security concern? (Select all that apply)",
+opts:["Overlapping or malformed fragments can be used to evade intrusion detection systems","Security devices inspecting individual fragments without reassembly may miss malicious payloads","Fragmentation increases the attack surface and complicates monitoring","Fragmentation makes packets immune to firewall inspection"],
+correct:[0,1,2],
+explain:"Fragmentation is a security concern because attackers use overlapping/malformed fragments to confuse IDS/firewalls, devices that do not perform full reassembly may miss attacks, and it generally increases complexity and attack surface. However, modern firewalls perform reassembly before inspection."
+},
+{
+topic:"Networking Fundamentals",
+type:"single",
+q:"At which OSI layer does a stateful firewall primarily operate to track connections?",
+opts:["Layer 2 — Data Link","Layer 4 — Transport","Layer 7 — Application","Layer 1 — Physical"],
+correct:[1],
+explain:"Stateful firewalls primarily operate at Layer 4 (Transport), tracking TCP/UDP connections and their state (SYN, ESTABLISHED, etc.) to enforce rules like 'only allow return traffic for sessions we initiated.' They see ports and connection state, but not application-layer content."
+},
+{
+topic:"Networking Fundamentals",
+type:"multi",
+q:"Which of the following are common Layer 4 (Transport Layer) attacks? (Select all that apply)",
+opts:["TCP SYN floods that exhaust server connection resources","UDP amplification attacks using spoofed source addresses","Port scanning to discover listening services","SQL injection targeting web application databases"],
+correct:[0,1,2],
+explain:"SYN floods, UDP amplification, and port scanning are all Layer 4 attacks targeting TCP/UDP connection handling and service discovery. SQL injection is a Layer 7 (Application) attack targeting the application logic, not the transport layer."
+},
+// ======== TOPIC: Network Security Monitoring ========
+{
+topic:"Network Security Monitoring",
+type:"multi",
+q:"In a packet capture architecture, why must NIC offloading features (TSO/LRO) be disabled on capture interfaces? (Select all that apply)",
+opts:["TSO/LRO present a 'fake' view showing packets larger than the actual MTU","IDS signature matching may fail against artificially large packets created by LRO","Checksums may appear missing or invalid, confusing analysis tools","Offloading makes the capture faster, which is always desirable"],
+correct:[0,1,2],
+explain:"NIC offloading (TSO/LRO) reassembles or segments packets on the card, presenting packets to the capture tool that do not match what is actually on the wire. This causes IDS signature failures, incorrect checksums, and unreliable forensic evidence. Offloading must be disabled on capture interfaces."
+},
+{
+topic:"Network Security Monitoring",
+type:"single",
+q:"What is the primary purpose of 'flow affinity' (symmetric hashing) when load-balancing traffic across multiple IDS sensors?",
+opts:["To distribute traffic equally using round-robin","To ensure both sides of every conversation (the full 5-tuple flow) are sent to the same sensor","To encrypt the traffic before it reaches the sensor","To compress packets for faster processing"],
+correct:[1],
+explain:"IDS sensors are stateful and need to see the entire conversation. Flow affinity uses symmetric hashing on the 5-tuple to ensure all packets from a specific connection go to the same sensor, preventing fragmented conversations and detection failures."
+},
+{
+topic:"Network Security Monitoring",
+type:"multi",
+q:"Which of the following are reasons why full packet capture (PCAP) data is typically stored in a 'rolling buffer' rather than indefinitely? (Select all that apply)",
+opts:["A saturated 1 Gbps link generates approximately 11 TB of data per day","Storing encrypted payloads often provides little forensic value","Long-term storage of PCAP is financially impractical for most organizations","PCAP data is legally prohibited from being stored for more than 24 hours"],
+correct:[0,1,2],
+explain:"PCAP storage is massive (approx. 11 TB/day per Gbps), encrypted payloads are opaque and add little value, and long-term storage is cost-prohibitive. A rolling buffer provides short-term retention while lower-fidelity metadata (NetFlow) is archived long-term. There is no universal legal prohibition on PCAP storage duration."
+},
+{
+topic:"Network Security Monitoring",
+type:"single",
+q:"Why are packet capture sensors considered 'high-value assets' that must be heavily secured?",
+opts:["They contain raw network data including potentially unencrypted passwords, PII, and intellectual property","They are the fastest devices on the network","They store the organization's firewall rules","They generate the most network traffic"],
+correct:[0],
+explain:"Capture sensors collect raw and processed network data, potentially including cleartext credentials, sensitive queries, and IP. If an adversary compromises a sensor, they gain comprehensive visibility into network behavior and can use that data to orchestrate further attacks."
+},
+// ======== TOPIC: Cloud Security ========
+{
+topic:"Cloud & Hybrid Security",
+type:"multi",
+q:"Under the Shared Responsibility Model in cloud computing, which of the following are the customer's responsibility? (Select all that apply)",
+opts:["Securing data and configuring access controls (IAM policies)","Properly configuring Security Groups and S3 bucket permissions","Patching and maintaining the physical hypervisor and network fabric","Defining and enforcing encryption policies for data at rest and in transit"],
+correct:[0,1,3],
+explain:"The customer is responsible for 'security IN the cloud': data, access controls, Security Group configuration, and encryption policies. The cloud provider is responsible for 'security OF the cloud': the physical infrastructure, hypervisors, and network fabric."
+},
+{
+topic:"Cloud & Hybrid Security",
+type:"single",
+q:"The Pegasus Airlines breach (2022) exposed 23 million files. What was the root cause?",
+opts:["A sophisticated SQL injection attack on their web application","A misconfigured AWS S3 bucket with public access enabled","An insider threat from a disgruntled employee","A DDoS attack that overwhelmed their CDN"],
+correct:[1],
+explain:"Pegasus Airlines had an AWS S3 bucket configured with public access. It was not a sophisticated hack but a simple configuration error (a single checkbox). This illustrates how in the cloud, the 'perimeter' is defined by policy, and a weak policy means an instant vulnerability."
+},
+{
+topic:"Cloud & Hybrid Security",
+type:"multi",
+q:"What makes the AWS Instance Metadata Service (IMDS) a critical attack vector? (Select all that apply)",
+opts:["It allows a VM to retrieve its own IAM credentials, which attackers can steal via SSRF","IMDSv1 requires no authentication, making it trivially exploitable","IMDSv2 mitigates SSRF by requiring a PUT request to obtain a session token","The metadata service is only accessible from outside the VPC"],
+correct:[0,1,2],
+explain:"The IMDS at 169.254.169.254 provides IAM credentials to instances. IMDSv1 is trivially exploitable via SSRF because it requires no authentication. IMDSv2 mitigates this by requiring a PUT request for a session token. The service is only accessible from within the instance, not from outside the VPC."
+},
+{
+topic:"Cloud & Hybrid Security",
+type:"single",
+q:"What happened to Code Spaces in 2014 that caused the company to cease operations within 12 hours?",
+opts:["Their servers were infected with ransomware","Attackers gained AWS console access and deleted both production data (S3) and backups (Snapshots) in the same account","Their domain registrar was hacked and DNS was redirected","A misconfigured firewall allowed public access to their database"],
+correct:[1],
+explain:"Code Spaces was destroyed because attackers gained AWS console control and deleted both production S3 data and backup Snapshots. The critical failure was storing backups in the same cloud account as production, meaning a single compromise wiped everything."
+},
+{
+topic:"Cloud & Hybrid Security",
+type:"multi",
+q:"Cloud Security Posture Management (CSPM) tools address which problems? (Select all that apply)",
+opts:["Continuously scanning cloud configurations against security baselines like CIS Benchmarks","Detecting when an S3 bucket is made publicly accessible","Auto-remediating misconfigurations (e.g., reverting a public bucket to private)","Replacing the need for Identity and Access Management (IAM)"],
+correct:[0,1,2],
+explain:"CSPM tools (Wiz, Prisma Cloud, Orca) continuously scan cloud API configurations against baselines, detect misconfigurations like public storage, and can auto-remediate them. They complement IAM but do not replace it."
+},
+// ======== TOPIC: Serverless & Containers ========
+{
+topic:"Workload Security",
+type:"single",
+q:"What is a 'Denial of Wallet' attack in the context of serverless computing (e.g., AWS Lambda)?",
+opts:["Stealing a user's cryptocurrency wallet private keys","Triggering a recursive Lambda invocation loop that scales uncontrollably, exhausting the cloud budget","Encrypting the serverless function code with ransomware","Blocking API Gateway access with a traditional DDoS flood"],
+correct:[1],
+explain:"In serverless, functions auto-scale to meet demand. A 'Denial of Wallet' attack triggers recursive invocations (Function A calls Function B calls Function A), causing uncontrolled scaling and massive cloud billing charges instead of a traditional server crash."
+},
+{
+topic:"Workload Security",
+type:"multi",
+q:"Which of the following are critical container security controls? (Select all that apply)",
+opts:["Using private, trusted registries instead of blindly pulling from Docker Hub","Scanning images for CVEs in CI/CD pipelines before deployment","Ensuring containers do not run as root (UID 0)","Generating a Software Bill of Materials (SBOM) for dependency visibility"],
+correct:[0,1,2,3],
+explain:"All four are critical container security controls: trusted registries prevent supply chain attacks, CI/CD scanning catches vulnerabilities early, running as non-root prevents container escapes from gaining host-level access, and SBOMs provide visibility into dependencies (crucial for rapid response to vulnerabilities like Log4Shell)."
+},
+{
+topic:"Workload Security",
+type:"single",
+q:"In the concept of 'Immutable Infrastructure,' how are patches applied to running servers?",
+opts:["Patches are applied in-place using automated tools during a maintenance window","Running servers are never patched directly; instead, a new hardened image is built and the old instances are replaced","Patches are only applied after a security incident occurs","The cloud provider patches all servers automatically under the Shared Responsibility Model"],
+correct:[1],
+explain:"Immutable Infrastructure treats running servers as disposable. When a patch is needed, a new Golden Image is built, tested, and deployed to replace old instances. The old ones are destroyed. This eliminates configuration drift and wipes any potential persistence."
+},
+// ======== TOPIC: Service Mesh & Micro-segmentation ========
+{
+topic:"Segmentation & Service Mesh",
+type:"multi",
+q:"What does a Service Mesh (e.g., Istio, Linkerd) achieve for microservices security? (Select all that apply)",
+opts:["Automatic mutual TLS (mTLS) encryption between all services in the cluster","Cryptographic authentication of service identities without developers writing crypto code","Enforcement of strict isolation policies (e.g., 'Ledger cannot talk to Frontend')","Replacement of all network firewalls in the organization"],
+correct:[0,1,2],
+explain:"Service Mesh injects sidecar proxies that handle mTLS (encrypting traffic and mutually authenticating services), enforce isolation policies, and abstract security from application code. It complements but does not replace all network firewalls."
+},
+{
+topic:"Segmentation & Service Mesh",
+type:"single",
+q:"What is the 'Sidecar' pattern in a Service Mesh, and why is it valuable?",
+opts:["A backup container that takes over if the main application crashes","A proxy container attached to every application pod that handles mTLS, logging, and routing, abstracting security from app code","A container that runs antivirus scans on the application at runtime","A separate database container for storing security logs"],
+correct:[1],
+explain:"The Sidecar is a proxy container (often Envoy) paired with every application container. All traffic flows through it. It handles mTLS, certificate rotation, logging, and routing transparently. The application just talks to localhost, ensuring consistent security across all services regardless of programming language."
+},
+// ======== TOPIC: Web App Security ========
+{
+topic:"Web & Application Security",
+type:"multi",
+q:"What defines the Same-Origin Policy (SOP) in browser security? (Select all that apply)",
+opts:["An origin is defined by the combination of Protocol (scheme), Host, and Port","SOP prevents malicious scripts on one site from reading data from another origin","SOP blocks all cross-origin requests including embedding images and scripts","CORS allows servers to explicitly relax SOP restrictions via HTTP headers"],
+correct:[0,1,3],
+explain:"SOP is defined by Protocol + Host + Port and prevents cross-origin data reading. However, SOP does NOT block all cross-origin interactions; embedding resources like images and scripts is generally allowed. CORS provides a standard mechanism for servers to selectively relax SOP."
+},
+{
+topic:"Web & Application Security",
+type:"single",
+q:"Why is storing JWTs in Local Storage considered risky for Single Page Applications (SPAs)?",
+opts:["Local Storage is too small to hold JWT tokens","Local Storage is accessible to JavaScript, making tokens vulnerable to exfiltration via XSS attacks","Local Storage encrypts data, making it hard to read tokens when needed","Local Storage is shared across all browser tabs for all domains"],
+correct:[1],
+explain:"Local Storage is fully accessible to JavaScript. If an SPA has an XSS vulnerability, an attacker's script can read the JWT from Local Storage and exfiltrate it. The alternative (HttpOnly cookies) prevents JavaScript access but introduces CSRF risks."
+},
+{
+topic:"Web & Application Security",
+type:"multi",
+q:"Regarding TLS in modern application architecture, which statements are correct? (Select all that apply)",
+opts:["TLS is often terminated at the load balancer, leaving internal East-West traffic unencrypted","Zero Trust requires re-encryption from load balancer to backend or using mTLS via a service mesh","Supporting legacy protocols like SSLv3 or TLS 1.0 exposes systems to downgrade attacks","Perfect Forward Secrecy (PFS) ensures past sessions cannot be decrypted even if the server key is later stolen"],
+correct:[0,1,2,3],
+explain:"All statements are correct. TLS termination at the load balancer is common but leaves internal traffic exposed. Zero Trust demands re-encryption or mTLS. Legacy protocols enable downgrade attacks (POODLE, Logjam). PFS (using ECDHE) protects past sessions from future key compromise."
+},
+{
+topic:"Web & Application Security",
+type:"single",
+q:"What is a CORS 'preflight' request?",
+opts:["A request the server sends to the browser to check its version","An automatic HTTP OPTIONS request the browser sends before executing potentially risky cross-origin actions (like PUT/DELETE)","A DNS query to verify the origin server exists","A TLS handshake verification step"],
+correct:[1],
+explain:"For non-simple requests (e.g., using PUT, DELETE, or custom headers), the browser automatically sends an HTTP OPTIONS preflight request to ask the server for permission. The server responds with headers like Access-Control-Allow-Methods, and the browser proceeds only if permission is granted."
+},
+// ======== TOPIC: API Security ========
+{
+topic:"API Security",
+type:"multi",
+q:"What is Broken Object Level Authorization (BOLA), and why is it the #1 API vulnerability? (Select all that apply)",
+opts:["It occurs when an API fails to validate that an authenticated user has the right to access a specific requested object","Attackers exploit it by simply changing an object ID in the API request to access another user's data","It is easy to exploit because APIs often use predictable sequential IDs","It can only be detected by automated scanners, not manual testing"],
+correct:[0,1,2],
+explain:"BOLA (historically called IDOR) is the top API vulnerability because APIs often use predictable IDs and fail to verify per-object authorization. Attackers simply change the ID parameter. Contrary to the last option, automated scanners struggle with BOLA; it often requires manual testing with business logic understanding."
+},
+{
+topic:"API Security",
+type:"single",
+q:"The Optus breach (2022) that exposed 9.8 million records was caused by:",
+opts:["A sophisticated supply chain attack through a third-party library","An unauthenticated test API endpoint exposed to the internet, allowing ID enumeration","A SQL injection vulnerability in their production database","A compromised employee laptop with VPN access"],
+correct:[1],
+explain:"Optus had a test API endpoint exposed to the internet with no authentication. Attackers simply enumerated sequential contact IDs (1, 2, 3...) to scrape 9.8 million customer records. This demonstrates that 'security by obscurity' (hidden URLs) is not a valid defense."
+},
+{
+topic:"API Security",
+type:"multi",
+q:"Which API security practices enforce the principle of least privilege? (Select all that apply)",
+opts:["Issuing tokens with the narrowest possible scope (e.g., read-only if writes are not needed)","Preventing mass assignment by whitelisting which fields are updatable","Filtering sensitive data at the backend rather than relying on the frontend UI to hide fields","Using a wildcard (*) in CORS Access-Control-Allow-Origin for convenience"],
+correct:[0,1,2],
+explain:"Least privilege in APIs means narrow token scopes, explicit whitelists for updatable fields (preventing mass assignment), and backend-level data filtering (not relying on UI obscurity). Using a wildcard (*) in CORS is the opposite of least privilege and creates a security vulnerability."
+},
+{
+topic:"API Security",
+type:"single",
+q:"What is a 'Zombie API' and why is it dangerous?",
+opts:["An API that automatically scales to handle DDoS attacks","A deprecated/obsolete API version that remains accessible but unpatched, lacking current security controls","An API endpoint that only responds during off-peak hours","An API protected by legacy authentication that still uses basic auth"],
+correct:[1],
+explain:"Zombie APIs are deprecated versions that remain active and accessible but are no longer maintained, patched, or monitored. They lack the security controls of current production versions and are prime targets for attackers because they represent unguarded entry points."
+},
+{
+topic:"API Security",
+type:"multi",
+q:"How should APIs handle error messages to prevent information leakage? (Select all that apply)",
+opts:["Return generic error codes (400, 500) to clients while logging detailed diagnostics internally","Never expose stack traces, database types, or file system paths in responses","Ensure error responses are consistent in timing and content to prevent side-channel attacks","Display detailed SQL error messages so developers can debug issues in production"],
+correct:[0,1,2],
+explain:"Safe error handling requires generic client-facing responses, no exposure of internal details (stack traces, DB types), and consistent response behavior to prevent timing-based enumeration attacks. Detailed SQL errors in production responses are a 'treasure map' for attackers."
+},
+{
+topic:"API Security",
+type:"multi",
+q:"What are effective defenses against webhook-based SSRF attacks? (Select all that apply)",
+opts:["Implementing strict allowlists of permitted domains and IP ranges for webhook URLs","Using an outbound proxy to inspect and validate API calls before execution","Enforcing IMDSv2 in AWS to require session tokens for metadata access","Allowing webhooks to point to any URL since they originate from a trusted server"],
+correct:[0,1,2],
+explain:"Webhook SSRF defenses include strict URL allowlists, outbound proxies, and enforcing IMDSv2 (which blocks simple SSRF metadata theft). Allowing arbitrary URLs is the vulnerability itself, not a defense."
+},
+// ======== TOPIC: DNS Security ========
+{
+topic:"DNS Security",
+type:"multi",
+q:"How does DNS Cache Poisoning work? (Select all that apply)",
+opts:["The attacker floods the recursive resolver with spoofed responses to win the 'race condition' against the real nameserver","If the attacker's response matches the Transaction ID and port first, the resolver caches the malicious IP","The poisoned entry affects all clients using that resolver for the duration of the TTL","The attacker needs physical access to the DNS server to modify zone files"],
+correct:[0,1,2],
+explain:"Cache Poisoning exploits the unauthenticated nature of traditional DNS (Do53). Attackers flood the resolver with spoofed answers, trying to match the Transaction ID. If they win the race, the fake record is cached and served to all clients until the TTL expires. No physical access is needed."
+},
+{
+topic:"DNS Security",
+type:"single",
+q:"What distinguishes a DNS Registrar Takeover from Cache Poisoning?",
+opts:["Cache Poisoning is permanent; Registrar Takeover is temporary","Registrar Takeover gives the attacker control over the authoritative NS records, providing persistent, global control over the domain","Registrar Takeover only affects a single recursive resolver","Cache Poisoning requires compromising the domain owner's account"],
+correct:[1],
+explain:"Cache Poisoning is temporary (limited to one resolver and the TTL duration). Registrar Takeover is far more severe: by compromising the domain owner's registrar account, the attacker changes the authoritative NS records, giving them persistent, global control over all DNS resolution for that domain."
+},
+{
+topic:"DNS Security",
+type:"multi",
+q:"Why is DNS an attractive protocol for malware Command & Control? (Select all that apply)",
+opts:["DNS is universally allowed through firewalls because blocking it breaks all network functionality","DNS is rarely inspected as deeply as HTTP/HTTPS traffic","DNS is designed for high availability, which malware authors piggyback on for resilient C2 infrastructure","DNS traffic is always encrypted end-to-end by default"],
+correct:[0,1,2],
+explain:"DNS is attractive for malware because it is universally allowed (blocking UDP 53 breaks the network), it is treated as infrastructure traffic with shallow inspection, and its inherent high availability makes C2 infrastructure resilient. Traditional DNS (Do53) is NOT encrypted by default."
+},
+{
+topic:"DNS Security",
+type:"single",
+q:"In DNS Sinkholing, what happens when a client queries for a known malicious domain?",
+opts:["The DNS server blocks the query and returns nothing","The DNS server returns the IP address of a controlled honeypot server, allowing the malware to connect and be analyzed","The DNS server forwards the query to law enforcement","The DNS server shuts down the client's network connection"],
+correct:[1],
+explain:"Sinkholing returns the IP of a server controlled by defenders (a honeypot/sinkhole). The malware connects believing it reached its C2 server, but defenders can now analyze the payload and identify which internal hosts are infected based on the traffic hitting the sinkhole."
+},
+{
+topic:"DNS Security",
+type:"multi",
+q:"What is Domain Shadowing and why is it effective? (Select all that apply)",
+opts:["Attackers compromise a legitimate domain owner's registrar account","They create thousands of malicious subdomains without disrupting the main website","The subdomains inherit the good reputation of the parent domain, bypassing reputation filters","It requires exploiting a vulnerability in the DNS protocol itself"],
+correct:[0,1,2],
+explain:"Domain Shadowing compromises registrar credentials to create malicious subdomains under a legitimate domain, while keeping the main site untouched. The subdomains leverage the parent domain's good reputation to bypass security filters. It is an administrative attack, not a protocol exploit."
+},
+{
+topic:"DNS Security",
+type:"single",
+q:"How does Fast-Flux DNS make it difficult for defenders to block malicious infrastructure?",
+opts:["By encrypting all DNS queries with TLS","By rapidly rotating the A-record IP addresses every few minutes using extremely low TTL values","By hiding the DNS server behind a VPN","By using only IPv6 addresses that firewalls cannot inspect"],
+correct:[1],
+explain:"Fast-Flux sets extremely low TTL values (often under 5 minutes) on DNS A-records and constantly rotates the associated IP addresses, often using a botnet of proxies. By the time a defender blocks one IP, the domain has already moved to a new one, making static IP blocklisting ineffective."
+},
+// ======== TOPIC: BGP & Routing Security ========
+{
+topic:"BGP & Routing Security",
+type:"multi",
+q:"Why is BGP fundamentally vulnerable to hijacking attacks? (Select all that apply)",
+opts:["BGP was designed on a 'trust your neighbor' model with no built-in authentication of route announcements","Any AS can announce routes for IP prefixes it does not own, and neighboring routers may accept them","BGP route propagation can redirect internet traffic through attacker-controlled infrastructure","BGP uses strong cryptographic verification for all route updates by default"],
+correct:[0,1,2],
+explain:"BGP's core vulnerability is its trust-based design. It has no built-in mechanism to verify that an AS actually owns the IP prefixes it announces. Malicious or misconfigured ASes can announce routes for prefixes they do not own, causing traffic to be redirected through their infrastructure."
+},
+{
+topic:"BGP & Routing Security",
+type:"single",
+q:"The Facebook outage of October 2021 was caused by:",
+opts:["A massive DDoS attack against Facebook's data centers","A BGP configuration error that withdrew Facebook's DNS routes from the internet","A ransomware attack encrypting Facebook's servers","An employee accidentally deleting the main database"],
+correct:[1],
+explain:"Facebook's outage was a Control Plane failure. A bad BGP configuration update inadvertently withdrew Facebook's routes from the global internet. Their servers and code were fine, but they ceased to exist because the routing (Control Plane) failed."
+},
+{
+topic:"BGP & Routing Security",
+type:"multi",
+q:"Which of the following are defenses against BGP hijacking? (Select all that apply)",
+opts:["RPKI (Resource Public Key Infrastructure) for cryptographic validation of route origins","BGP route filtering and prefix validation by ISPs","Monitoring tools like BGPStream for detecting anomalous route announcements","Relying solely on the trust-based BGP model since it has worked for decades"],
+correct:[0,1,2],
+explain:"BGP defenses include RPKI (cryptographic proof of prefix ownership), route filtering/prefix validation by ISPs, and monitoring tools for anomaly detection. Simply trusting the existing BGP model is the vulnerability itself, not a defense."
+},
+// ======== TOPIC: Control Plane vs Data Plane ========
+{
+topic:"Architecture Concepts",
+type:"single",
+q:"What is the relationship between the Control Plane and the Data Plane in network security?",
+opts:["The Data Plane makes routing decisions; the Control Plane carries user traffic","The Control Plane makes routing/policy decisions (BGP, DNS, IAM); the Data Plane carries user traffic (HTTP, DB queries)","They are the same thing with different names","The Control Plane only exists in cloud environments"],
+correct:[1],
+explain:"The Control Plane is the 'GPS and traffic lights' (BGP, DNS, IAM policies) that decide where traffic goes. The Data Plane is the 'highway' carrying actual user traffic (HTTP requests, database queries). Compromising the Control Plane is often more devastating than attacking the Data Plane."
+},
+{
+topic:"Architecture Concepts",
+type:"multi",
+q:"According to the lectures, why is a Data Flow Diagram (DFD) more valuable than a traditional Network Diagram for security analysis? (Select all that apply)",
+opts:["DFDs show logic, data inputs, and trust boundary crossings","Network Diagrams only show physical connectivity (cables, switches, IPs)","DFDs expose logical vulnerabilities like unencrypted sensitive data crossing boundaries","Network Diagrams automatically detect all security vulnerabilities"],
+correct:[0,1,2],
+explain:"DFDs are superior for security because they show data flows, trust boundary crossings, and logical vulnerabilities. Network Diagrams show only physical connectivity. The TJX breach would have been caught by a DFD showing unencrypted PCI data over WEP Wi-Fi, which the network diagram missed."
+},
+// ======== TOPIC: NIST CSF & Frameworks ========
+{
+topic:"Architecture Concepts",
+type:"multi",
+q:"The NIST Cybersecurity Framework 2.0 consists of which core functions? (Select all that apply)",
+opts:["Identify, Protect, Detect, Respond, Recover","Govern (added in CSF 2.0 as the overarching function)","Attack, Defend, Monitor, Report","Prevent, Investigate, Contain, Eradicate"],
+correct:[0,1],
+explain:"NIST CSF 2.0 includes the five original functions (Identify, Protect, Detect, Respond, Recover) plus the addition of Govern as an overarching function. These provide a shared language for engineers, architects, executives, and regulators."
+},
+{
+topic:"Architecture Concepts",
+type:"single",
+q:"Netflix's Chaos Monkey demonstrates which principle of modern network security?",
+opts:["Security through obscurity by randomizing server locations","Proving availability (the 'A' in CIA) by deliberately breaking systems to ensure they self-heal","Detecting malware by randomly scanning production instances","Encrypting all data at rest using rotating keys"],
+correct:[1],
+explain:"Chaos Monkey is Chaos Engineering, deliberately terminating instances in production to prove the system (network + app) heals itself. This tests Availability without relying on a single point of failure and demonstrates that modern security is about architecting resilience, not buying appliances."
+},
+// ======== TOPIC: Living off the Land & Social Engineering ========
+{
+topic:"Threat Landscape",
+type:"multi",
+q:"The 'Living off the Land' (LOTL) technique used by groups like Volt Typhoon involves which of the following? (Select all that apply)",
+opts:["Using native OS tools (PowerShell, netsh, Bash, AWS CLI) instead of dropping malware files","Evading antivirus detection because no malicious binaries are introduced","Requiring behavioral monitoring rather than signature-based detection to identify","Only targeting cloud environments and not on-premise systems"],
+correct:[0,1,2],
+explain:"LOTL attackers use built-in system tools to avoid detection. Since no malware files are dropped, antivirus (which scans files) is ineffective. Detection requires behavioral monitoring (e.g., 'Why is the print spooler running PowerShell?'). LOTL works in both on-prem and cloud environments."
+},
+{
+topic:"Threat Landscape",
+type:"single",
+q:"In the MGM Resorts breach (2023), how did the Scattered Spider group gain initial access?",
+opts:["Exploiting a zero-day vulnerability in MGM's web application","Social engineering: finding employee info on LinkedIn, calling the Help Desk, and impersonating the employee to get MFA reset","Brute-forcing the administrator password on MGM's VPN","Physically accessing MGM's server room"],
+correct:[1],
+explain:"Scattered Spider used voice phishing (vishing, MITRE T1566.004). They found employee information on LinkedIn, called the IT Help Desk, impersonated the employee, and convinced the agent to reset MFA. This $100M+ breach demonstrates that technical controls cannot stop social engineering if processes allow humans to bypass security controls."
+},
+{
+topic:"Threat Landscape",
+type:"multi",
+q:"The Uber breach of 2022 illustrates which security failures? (Select all that apply)",
+opts:["Hardcoded admin credentials found in a PowerShell script on a network share","The credentials provided access to the Privileged Access Management (PAM) system","The PAM compromise led to total access across AWS and GCP environments","The attack required sophisticated exploitation of a kernel vulnerability"],
+correct:[0,1,2],
+explain:"The Uber breach chain was: (1) hardcoded credentials in a script (T1552.001), (2) those credentials unlocked the PAM system (Thycotic), and (3) PAM provided 'God Mode' across AWS and GCP. No sophisticated exploit was needed, just a poorly secured secret."
+},
+// ======== TOPIC: IDS/IPS & Detection ========
+{
+topic:"IDS/IPS & Detection",
+type:"multi",
+q:"What is the difference between signature-based and anomaly-based detection? (Select all that apply)",
+opts:["Signature-based detects known threats by matching patterns against a database of known attack signatures","Anomaly-based establishes a baseline of normal behavior and alerts on deviations","Signature-based has low false-positive rates but cannot detect novel (zero-day) attacks","Anomaly-based can detect unknown threats but often suffers from high false-positive rates"],
+correct:[0,1,2,3],
+explain:"Signature-based detection matches known patterns (low false positives, blind to novel attacks). Anomaly-based establishes behavioral baselines and flags deviations (can detect unknown threats, but 'abnormal' does not always mean 'malicious,' leading to high false positives)."
+},
+{
+topic:"IDS/IPS & Detection",
+type:"single",
+q:"JA3 fingerprinting is a technique used to:",
+opts:["Decrypt TLS traffic without the server's private key","Identify specific client applications (including malware) based on the unencrypted metadata in the TLS Client Hello handshake","Block all encrypted traffic at the firewall","Generate digital certificates for mutual TLS authentication"],
+correct:[1],
+explain:"JA3 fingerprinting analyzes the unencrypted fields in the TLS Client Hello (cipher suites, extensions, etc.) to create a hash that uniquely identifies the client application. This allows detection of specific malware variants or Tor clients even within encrypted tunnels, without decryption."
+},
+{
+topic:"IDS/IPS & Detection",
+type:"multi",
+q:"Why do many organizations initially deploy IPS controls in 'alert-only' mode before enabling active blocking? (Select all that apply)",
+opts:["To tune the system and reduce false positives before blocking legitimate traffic","To avoid causing a self-inflicted Denial of Service against business-critical applications","To prevent alert fatigue where analysts ignore warnings due to excessive noise","Because IPS systems are incapable of blocking traffic"],
+correct:[0,1,2],
+explain:"Active blocking based on false positives can disrupt business operations (self-inflicted DoS). Alert-only mode allows tuning to distinguish true threats from noise, reducing false positives and alert fatigue before enabling blocking. IPS systems are fully capable of inline blocking once tuned."
+},
+// ======== TOPIC: Hybrid & Cloud Networking ========
+{
+topic:"Cloud & Hybrid Security",
+type:"multi",
+q:"What are the security risks of Split Tunneling in client VPN configurations? (Select all that apply)",
+opts:["The user's endpoint becomes a bridge between the unsecured internet and the corporate network","An attacker who compromises the endpoint via the open internet connection can pivot into the private network","Split tunneling bypasses corporate inspection points for internet-bound traffic","Split tunneling is always the most secure VPN configuration"],
+correct:[0,1,2],
+explain:"Split tunneling allows direct internet access alongside VPN access, turning the endpoint into a bridge. If compromised via the open internet connection, an attacker can pivot into the corporate network, bypassing all perimeter security. High-security environments typically disable split tunneling."
+},
+{
+topic:"Cloud & Hybrid Security",
+type:"single",
+q:"In a Hub-and-Spoke cloud network architecture, what is the primary security benefit of routing traffic through the central Hub?",
+opts:["It eliminates the need for encryption between spokes","It creates a controllable choke point where security appliances (NGFW, IPS) can inspect all traffic","It automatically patches all workloads in the spoke networks","It provides unlimited bandwidth between all connected VPCs"],
+correct:[1],
+explain:"Hub-and-Spoke architecture forces traffic through a central Hub (e.g., AWS Transit Gateway), creating a security choke point where NGFW/IPS can inspect both North-South (internet) and East-West (internal) traffic. This prevents a compromised spoke from laterally moving to another spoke without passing through inspection."
+},
+// ======== TOPIC: Geopolitics & Future Trends ========
+{
+topic:"Future Trends",
+type:"multi",
+q:"The concept of the 'Splinternet' refers to which trends? (Select all that apply)",
+opts:["Fragmentation of the global internet into 'Walled Gardens' based on national borders","Countries mandating specific BGP paths to avoid routing through hostile nations","Data Sovereignty laws requiring DNS resolution and data storage within national borders","A new internet protocol designed to replace TCP/IP"],
+correct:[0,1,2],
+explain:"The Splinternet describes the shift from a borderless internet to geopolitically fragmented networks. This includes national 'walled gardens,' mandated BGP routing to avoid hostile nations, and Data Sovereignty laws (GDPR, PDPL) requiring data to remain within national borders."
+},
+{
+topic:"Future Trends",
+type:"multi",
+q:"How are attackers using AI to evade DNS-based detection? (Select all that apply)",
+opts:["Generating 'human-like' domain names composed of legitimate words that have low entropy","Bypassing traditional DGA detection that flags domains with high randomness/entropy","Creating domains that blend in with normal traffic, defeating mathematical detection filters","Using AI to physically destroy DNS servers"],
+correct:[0,1,2],
+explain:"Attackers use Generative AI and dictionary-based algorithms to produce domains that look like normal words (low entropy) rather than random strings (high entropy). This defeats traditional entropy-based DGA detection, leading to a 'Machine vs. Machine' warfare dynamic."
+},
+// ======== TOPIC: Network Security as System ========
+{
+topic:"Architecture Concepts",
+type:"single",
+q:"Stallings makes a critical distinction between 'Security Mechanisms' and 'Security Services.' What is this distinction?",
+opts:["Security Mechanisms are the outcomes; Security Services are the tools","Security Mechanisms are specific methods (encryption, digital signatures); Security Services are outcomes (Confidentiality, Integrity)","They are interchangeable terms for the same concepts","Security Mechanisms only apply to cloud; Security Services only apply to on-premise"],
+correct:[1],
+explain:"Stallings distinguishes between mechanisms (the HOW: encryption, access controls, digital signatures) and services (the WHAT: confidentiality, integrity, availability, authentication). Modern security views the overall system and its services as the goal, not any individual mechanism or tool."
+},
+{
+topic:"Architecture Concepts",
+type:"multi",
+q:"Continuous Adaptive Risk and Trust Assessment (CARTA) differs from traditional FIPS 199 categorization in which ways? (Select all that apply)",
+opts:["CARTA treats security as a real-time, dynamic risk management problem","Risk signals include identity, device posture, location, time, and behavior","Controls adjust dynamically based on risk score rather than remaining fixed","CARTA categorizes systems once as Low, Moderate, or High and never reassesses"],
+correct:[0,1,2],
+explain:"CARTA is dynamic and continuous, evaluating risk in real-time based on multiple signals (identity, device, location, behavior) and adjusting controls accordingly. FIPS 199 is static categorization. CARTA catches anomalies like 'impossible travel' that static models miss."
+},
+// ======== TOPIC: Policy as Code, OPA ========
+{
+topic:"Architecture Concepts",
+type:"single",
+q:"What does 'Policy as Code' using tools like Open Policy Agent (OPA) achieve?",
+opts:["It allows developers to manually review security settings before each deployment","It decouples security decision logic from application code, enforcing invariants at the infrastructure level so insecure deployments are automatically rejected","It replaces all firewalls with software-defined policies","It generates security reports for compliance audits only"],
+correct:[1],
+explain:"Policy as Code (OPA) decouples security rules from application logic, enforcing them at the infrastructure level. If a deployment violates a policy (e.g., a public load balancer without the correct tag), it is automatically rejected. This shifts from 'detecting' bad behavior to 'preventing' it."
+},
+// ======== TOPIC: Evidence & Chain of Custody ========
+{
+topic:"Network Security Monitoring",
+type:"multi",
+q:"When handling packet capture data that may become legal evidence, which practices are essential? (Select all that apply)",
+opts:["Maintaining a Chain of Custody documenting who handled the data, when, and why","Generating cryptographic hashes (MD5/SHA-256) immediately upon acquisition to prove integrity","Using immutable storage (e.g., S3 Object Lock with WORM) to prevent tampering","Storing evidence on the analyst's personal laptop for convenience"],
+correct:[0,1,2],
+explain:"Legal evidence handling requires: Chain of Custody documentation, cryptographic hashing for integrity verification, and immutable/WORM storage to prevent modification. Storing evidence on personal devices would break chain of custody and compromise evidentiary integrity."
+},
+// ======== TOPIC: Rate Limiting & DDoS ========
+{
+topic:"API Security",
+type:"single",
+q:"What is the purpose of implementing rate limiting on API endpoints?",
+opts:["To improve the API's response time by caching frequent requests","To prevent abuse such as brute-force attacks, credential stuffing, and resource exhaustion by limiting the number of requests per time window","To encrypt API responses for confidentiality","To redirect excess traffic to a backup server"],
+correct:[1],
+explain:"Rate limiting restricts the number of requests a client can make within a time window. This prevents brute-force attacks, credential stuffing, enumeration attacks, and resource exhaustion (DoS) by throttling or blocking excessive requests."
+},
+// ======== TOPIC: DNS Amplification ========
+{
+topic:"DNS Security",
+type:"single",
+q:"In a DNS Amplification attack, what role do 'open resolvers' play?",
+opts:["They filter and block malicious DNS queries","They receive small queries with spoofed victim IPs and send much larger responses to the victim, creating a traffic multiplier effect","They encrypt DNS queries for confidentiality","They cache DNS records to speed up resolution for legitimate users"],
+correct:[1],
+explain:"Open resolvers are DNS servers that accept queries from any source. Attackers send small queries (with the victim's spoofed IP as source) to open resolvers, which return much larger responses to the victim. This creates a multiplier effect (e.g., 60-byte query resulting in 512+ byte response), overwhelming the victim's bandwidth."
+},
+// ======== TOPIC: Subdomain Takeover ========
+{
+topic:"Cloud & Hybrid Security",
+type:"single",
+q:"What is a 'Dangling CNAME' and why does it enable subdomain takeover?",
+opts:["A CNAME record that points to a domain with an expired TLS certificate","A DNS CNAME record pointing to a deprovisioned cloud resource (e.g., deleted EC2 instance), allowing an attacker to claim the resource and serve content on that subdomain","A CNAME that resolves to localhost (127.0.0.1)","A CNAME record with an excessively long TTL value"],
+correct:[1],
+explain:"A Dangling CNAME occurs when a DNS record still points to a cloud resource (e.g., an S3 bucket or EC2 instance) that has been deleted. An attacker can create a new resource with the same name, effectively claiming the subdomain and serving malicious content under the legitimate organization's domain."
+},
+// ======== TOPIC: Visibility Gap ========
+{
+topic:"Network Security Monitoring",
+type:"multi",
+q:"The 'Visibility Gap' in hybrid environments refers to which challenges? (Select all that apply)",
+opts:["On-prem monitoring uses packets, SPAN ports, and taps (network-centric)","Cloud monitoring uses CloudTrail, VPC Flow Logs, and API logs (identity-centric)","The connection between on-prem and cloud (Direct Connect/VPN) is often the least monitored seam","Cloud environments provide better packet-level visibility than on-premise networks"],
+correct:[0,1,2],
+explain:"Hybrid environments create an asymmetric visibility gap: on-prem is network-centric (packets, taps) while cloud is identity-centric (API logs, flow logs). The connection between them (Direct Connect/VPN) is often the unmonitored 'seam' where attackers can move between environments undetected."
+},
+// ======== TOPIC: OpenAPI / Testing ========
+{
+topic:"API Security",
+type:"multi",
+q:"How does leveraging OpenAPI Specifications (OAS/Swagger) improve API security testing? (Select all that apply)",
+opts:["Importing OAS definitions into scanners ensures 100% endpoint coverage, including shadow/zombie endpoints","Linters can audit the OAS definition for security flaws (missing auth, unconstrained schemas) before code is written","Fuzzing tools generate test cases from the OAS to verify implementations reject malicious input","OAS eliminates the need for any manual security testing"],
+correct:[0,1,2],
+explain:"OAS provides a machine-readable contract that enables complete scanner coverage, design-time auditing with linters, and automated fuzzing against the specification. However, OAS does not eliminate the need for manual testing, which remains critical for business logic flaws and complex authorization issues."
+},
+];
+
+// ---- State ----
+let activeTopics = new Set();
+let filteredQs = [];
+let answers = {};
+let correctCount = 0, wrongCount = 0;
+
+// ---- Init ----
+const topics = [...new Set(ALL_QUESTIONS.map(q=>q.topic))];
+const pillsEl = document.getElementById('topicPills');
+
+function renderPills(){
+  pillsEl.innerHTML = `<button class="topic-pill ${activeTopics.size===0?'active':''}" onclick="toggleTopic(null)">All Topics</button>`;
+  topics.forEach(t=>{
+    pillsEl.innerHTML += `<button class="topic-pill ${activeTopics.has(t)?'active':''}" onclick="toggleTopic('${t}')">${t}</button>`;
+  });
+}
+function toggleTopic(t){
+  if(t===null){activeTopics.clear();}
+  else{
+    if(activeTopics.has(t)) activeTopics.delete(t); else activeTopics.add(t);
+  }
+  renderPills();
+}
+renderPills();
+
+// ---- Quiz ----
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function startQuiz(){
+  filteredQs = activeTopics.size===0 ? [...ALL_QUESTIONS] : ALL_QUESTIONS.filter(q=>activeTopics.has(q.topic));
+  shuffle(filteredQs);
+  answers={};correctCount=0;wrongCount=0;
+  document.getElementById('header').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  document.getElementById('resultsCard').classList.add('hidden');
+  renderQuestions();
+  updateStats();
+  window.scrollTo({top:0});
+}
+
+function renderQuestions(){
+  const c = document.getElementById('questionsContainer');
+  c.innerHTML='';
+  filteredQs.forEach((q,i)=>{
+    const isMulti = q.type==='multi';
+    const letters = ['A','B','C','D'];
+    let optHtml = q.opts.map((o,j)=>`
+      <div class="opt" data-qi="${i}" data-oi="${j}" onclick="selectOpt(${i},${j})">
+        <div class="opt-marker">${letters[j]}</div>
+        <div class="opt-text">${o}</div>
+      </div>`).join('');
+    c.innerHTML += `
+    <div class="q-card" id="qcard-${i}">
+      <div class="q-meta">
+        <span class="q-num">Q${i+1}</span>
+        <span class="q-type">${isMulti?'Multi-Select':'Single Answer'}</span>
+        <span class="q-topic">${q.topic}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="options ${isMulti?'multi':'single'}" id="opts-${i}">${optHtml}</div>
+      <div class="submit-row" id="sub-${i}">
+        <button class="btn btn-primary" id="subbtn-${i}" onclick="submitAnswer(${i})" disabled>Submit</button>
+      </div>
+      <div class="explanation" id="exp-${i}"></div>
+    </div>`;
+  });
+}
+
+function selectOpt(qi,oi){
+  if(answers[qi]!==undefined) return;
+  const q = filteredQs[qi];
+  const isMulti = q.type==='multi';
+  const opts = document.querySelectorAll(`#opts-${qi} .opt`);
+  if(isMulti){
+    opts[oi].classList.toggle('selected');
+  } else {
+    opts.forEach(o=>o.classList.remove('selected'));
+    opts[oi].classList.add('selected');
+  }
+  const sel = document.querySelectorAll(`#opts-${qi} .opt.selected`);
+  document.getElementById(`subbtn-${qi}`).disabled = sel.length===0;
+}
+
+function submitAnswer(qi){
+  if(answers[qi]!==undefined) return;
+  const q = filteredQs[qi];
+  const opts = document.querySelectorAll(`#opts-${qi} .opt`);
+  const selected = [];
+  opts.forEach((o,j)=>{if(o.classList.contains('selected')) selected.push(j);});
+
+  // Lock options
+  opts.forEach(o=>o.classList.add('locked'));
+
+  // Check correctness
+  const correctSet = new Set(q.correct);
+  const selectedSet = new Set(selected);
+  const isCorrect = correctSet.size===selectedSet.size && [...correctSet].every(v=>selectedSet.has(v));
+
+  // Mark answers
+  opts.forEach((o,j)=>{
+    if(correctSet.has(j)) o.classList.add('correct-answer');
+    if(selectedSet.has(j) && !correctSet.has(j)) o.classList.add('wrong-answer');
+  });
+
+  const card = document.getElementById(`qcard-${qi}`);
+  card.classList.add(isCorrect?'answered-correct':'answered-wrong');
+
+  const exp = document.getElementById(`exp-${qi}`);
+  exp.className = `explanation show ${isCorrect?'correct-exp':'wrong-exp'}`;
+  exp.innerHTML = `<strong>${isCorrect?'✓ Correct!':'✗ Incorrect.'}</strong> ${q.explain}`;
+
+  document.getElementById(`sub-${qi}`).innerHTML = `<span style="font-size:13px;color:${isCorrect?'var(--green)':'var(--red)'};font-weight:600">${isCorrect?'Correct':'Incorrect'}</span>`;
+
+  answers[qi] = isCorrect;
+  if(isCorrect) correctCount++; else wrongCount++;
+  updateStats();
+
+  // Check if quiz complete
+  if(Object.keys(answers).length === filteredQs.length){
+    setTimeout(showResults, 600);
+  }
+}
+
+function updateStats(){
+  const total = filteredQs.length;
+  const answered = Object.keys(answers).length;
+  document.getElementById('progressFill').style.width = `${(answered/total)*100}%`;
+  document.getElementById('progressLabel').textContent = `${answered} / ${total}`;
+  document.getElementById('statCorrect').textContent = `✓ ${correctCount}`;
+  document.getElementById('statWrong').textContent = `✗ ${wrongCount}`;
+  document.getElementById('statPending').textContent = `○ ${total - answered} remaining`;
+}
+
+function showResults(){
+  const total = filteredQs.length;
+  const pct = Math.round((correctCount/total)*100);
+  document.getElementById('finalScore').textContent = `${pct}%`;
+  document.getElementById('finalCorrect').textContent = correctCount;
+  document.getElementById('finalWrong').textContent = wrongCount;
+  document.getElementById('finalTotal').textContent = total;
+  document.getElementById('resultsCard').classList.remove('hidden');
+  document.getElementById('reviewBtn').style.display = wrongCount>0?'inline-block':'none';
+  document.getElementById('resultsCard').scrollIntoView({behavior:'smooth'});
+}
+
+function resetQuiz(){
+  document.getElementById('header').classList.remove('hidden');
+  document.getElementById('quizArea').classList.add('hidden');
+  window.scrollTo({top:0});
+}
+
+function reviewWrong(){
+  const cards = document.querySelectorAll('.q-card');
+  cards.forEach((c,i)=>{
+    if(answers[i]===true) c.style.display='none';
+    else c.style.display='';
+  });
+  document.getElementById('resultsCard').classList.add('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Scroll to top btn
+window.addEventListener('scroll',()=>{
+  document.getElementById('scrollTop').classList.toggle('visible', window.scrollY>400);
+});
+</script>
+</body>
+</html>
